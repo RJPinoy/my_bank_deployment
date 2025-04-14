@@ -1,0 +1,3 @@
+[submodule "my_bank_frontend"]
+	path = my_bank_frontend
+	url = https://github.com/RJPinoy/my_bank_frontend.git
