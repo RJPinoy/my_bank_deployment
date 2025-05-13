@@ -66,29 +66,22 @@ Modify the pipeline script :
 
 ```
 pipeline {
-    agent none  // No default agent
-    
+    agent {
+        label "${AGENT}"
+    }
+
     stages {
-        stage('Backend CI') {
-            agent { label 'Jenkins agent composer' }
+        stage("Continuous Integration / Intégration Continue") {
             steps {
-                git 'https://github.com/RJPinoy/MyBank_project.git'
-                sh '''
-                    cd MyBank_backend
-                    composer install
-                    php bin/phpunit
-                '''
+                git branch: 'main', url: 'https://github.com/<your_repo>'
+                sh 'npm install'
             }
         }
-
-        stage('Frontend CI') {
-            agent { label 'Jenkins agent node' }
+        stage("Continuous Delivery / Livraison Continue") {
             steps {
-                git 'https://github.com/RJPinoy/MyBank_project.git'
-                sh '''
-                    cd MyBank_frontend
-                    npm install
-                '''
+                sh "docker build . -t ${DOCKERHUB_USERNAME}/next_cicdcd"
+                sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKER_PASSWORD}" // Créer un PAT sur Docker Hub : https://app.docker.com/settings/personal-access-tokens
+                sh "docker push ${DOCKERHUB_USERNAME}/next_cicdcd"
             }
         }
     }
@@ -103,7 +96,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 ```
 
 Once installed, run NGROK :
-You should first create an account to get your key.
+You should first create an account to get your key. https://dashboard.ngrok.com/get-started/setup/windows
 Then run this command :
 ```
 choco install ngrok
@@ -111,7 +104,7 @@ choco install ngrok
 
 Run the following command to add your authtoken to the default ngrok.yml configuration file.
 ```
-ngrok config add-authtoken 2uWpCX9FZVOFiEx97tSOjTsSSUZ_32sT2t4uxCSp6ro3QLt9t
+ngrok config add-authtoken $YOUR_AUTHTOKEN
 ```
 
 Put your app online at an ephemeral domain forwarding to your upstream service. For example, if it is listening on port http://localhost:8080, run:
